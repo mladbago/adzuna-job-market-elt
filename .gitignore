@@ -1,0 +1,23 @@
+# VS Code Specific 
+.vscode/
+*.code-workspace
+.history/
+
+# Security & Secrets
+.env
+**/profiles.yml 
+**/.dbt/
+
+# Python & environment
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.uv/
+.venv/
+
+# OS files 
+.DS_Store
+Thumbs.db
