@@ -1,0 +1,13 @@
+version: 2
+
+unit_tests:
+  - name: test_uppercasing_cities_while_cleaning
+    model: silver_adzuna_cleansed
+    given:
+      - input: ref('stg_adzuna_jobs')
+        rows: 
+          - {city: '   warszawa  ', voivodeship: '  mazowieckie '}
+    expect:
+      rows: 
+        - {city: 'Warszawa', voivodeship: 'Mazowieckie'}
+    

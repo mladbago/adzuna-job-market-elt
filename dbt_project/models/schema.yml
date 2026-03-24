@@ -1,24 +1,81 @@
 version: 2 
 
 models:
-  - name: dim_location_cleansed 
-    description: "Conformed dimensions for Polish job locations."
+  - name: dim_company_cleansed 
+    description: "Cleaned dimension table for companies in the job market in Poland."
     columns: 
-      - name: location_key 
+      - name: company_key
+        tests:
+          - not_null
+          - unique
+      - name: company_name 
+        tests: 
+          - dbt_utils.expression_is_true:
+              expression: " = trim(company_name)"
+  - name: dim_location_cleansed 
+    description: "Cleaned dimension table for job locations in the job market in Poland."
+    columns: 
+      - name: location_key
+        tests:
+          - not_null
+          - unique
+      - name: voivodeship
+        description: "The 16 official Polish administrative regions."
+        tests: 
+          - accepted_values:
+              values: ["Zachodniopomorskie", "Mazowieckie", "Podkarpackie", "Lubuskie", "Kujawsko-Pomorskie", "Dolnośląskie", "Łódzkie", "Małopolskie", "Opolskie", "Podlaskie", "Wielkopolskie", "Świętokrzyskie", "Lubelskie", "Śląskie", "Warmińsko-Mazurskie", "Pomorskie"]
+      - name: city
+        description: "The city where the job is located."
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: " = trim(city)"
+  - name: dim_category_cleansed 
+    description: "Cleaned dimension table for job categories in the job market in Poland."
+    columns: 
+      - name: category_key
         tests:
           - not_null
           - unique
   - name: fct_job_postings_cleansed 
-    description: "Fact table containing cleansed job postings data."
+    description: "Cleaned fact table for job postings in the job market in Poland."
     columns: 
       - name: job_posting_key
         tests:
           - not_null
           - unique
+      - name: job_id
+        tests:
+          - not_null
+          - unique
+      - name: category_key 
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_category_cleansed')
+              field: category_key
+      - name: company_key 
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_company_cleansed')
+              field: company_key
       - name: location_key
         tests:
           - not_null
           - relationships:
               to: ref('dim_location_cleansed')
               field: location_key
-              
+      - name: salary_min
+        description: "The minimum salary offered for the job posting."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0  
+          - dbt_expectations.expect_column_quantile_values_to_be_between:
+              quantile: .95
+              min_value: 57000
+              max_value: 5000000
+      - name: job_url
+        description: "The direct link to the Adzuna job posting."
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: "^https://www\\.adzuna\\.pl*"

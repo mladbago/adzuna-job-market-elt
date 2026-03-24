@@ -4,8 +4,7 @@
 WITH UNIQUE_COMPANIES AS (
     SELECT DISTINCT 
         COMPANY_NAME
-    FROM {{ ref('silver_adzuna_cleansed') }}
-    WHERE COMPANY_NAME IS NOT NULL 
+    FROM {{ ref('silver_adzuna_cleansed') }} 
 )
 
 SELECT 
