@@ -1,0 +1,16 @@
+{{config(
+    materialized='table'
+)}}
+
+WITH UNIQUE_CATEGORIES AS (
+    SELECT DISTINCT 
+        CATEGORY_LABEL, 
+        CATEGORY_TAG
+    FROM {{ ref('silver_adzuna_cleansed') }}
+)
+
+SELECT 
+    {{dbt_utils.generate_surrogate_key(['CATEGORY_LABEL', 'CATEGORY_TAG'])}} AS CATEGORY_KEY,
+    CAST(CATEGORY_LABEL AS VARCHAR(128)) AS CATEGORY_LABEL,
+    CAST(CATEGORY_TAG AS VARCHAR(128)) AS CATEGORY_TAG
+FROM UNIQUE_CATEGORIES

@@ -1,0 +1,16 @@
+{{config(
+    materialized='table'
+)}}
+
+WITH UNIQUE_LOCATIONS AS (
+    SELECT DISTINCT 
+        CITY, 
+        VOIVODESHIP
+    FROM {{ ref('silver_adzuna_cleansed') }}
+)
+
+SELECT 
+    {{dbt_utils.generate_surrogate_key(['CITY', 'VOIVODESHIP'])}} AS LOCATION_KEY,
+    CAST(CITY AS VARCHAR(64)) AS CITY,
+    CAST(VOIVODESHIP AS VARCHAR(64)) AS VOIVODESHIP
+FROM UNIQUE_LOCATIONS

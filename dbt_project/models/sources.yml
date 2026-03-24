@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: adzuna_raw
+    database: ADZUNA_DB
+    schema: RAW
+    tables:
+      - name: jobs_raw
+        description: "Raw job listings data from Adzuna, containing unprocessed information about job postings."
+        loaded_at_field: ingested_at
+        freshness: 
+          error_after:
+            count: 1
+            period: day
+          warn_after:
+            count: 12
+            period: hour
+        
