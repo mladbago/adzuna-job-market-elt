@@ -2,3 +2,4 @@
 apache-airflow-providers-snowflake
 astronomer-cosmos
 dbt-snowflake
+apache-airflow-providers-slack
