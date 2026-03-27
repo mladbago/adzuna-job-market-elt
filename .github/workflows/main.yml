@@ -24,6 +24,7 @@ jobs:
       - name: Setup Environment
         # Running from the root directory. No working-directory override.
         run: |
+          cd ./airflow
           echo "AIRFLOW_CONN_SNOWFLAKE_CONN=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
           echo "ADZUNA_APP_ID=${{ secrets.ADZUNA_APP_ID }}" >> .env
           echo "ADZUNA_APP_KEY=${{ secrets.ADZUNA_APP_KEY }}" >> .env
