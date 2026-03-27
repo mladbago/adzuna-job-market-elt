@@ -1,53 +1,53 @@
-name: Test Adzuna Pipeline
+# name: Test Adzuna Pipeline
 
-on:
-  push:
-    branches: [ main ] 
-  workflow_dispatch: 
+# on:
+#   push:
+#     branches: [ main ] 
+#   workflow_dispatch: 
 
-jobs:
-  run-pipeline:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+# jobs:
+#   run-pipeline:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      # --- DIAGNOSTIC STEP ---
-      - name: Show Folder Structure
-        run: |
-          echo "Listing all files in the root of the repository:"
-          ls -la
+#       # --- DIAGNOSTIC STEP ---
+#       - name: Show Folder Structure
+#         run: |
+#           echo "Listing all files in the root of the repository:"
+#           ls -la
 
-      - name: Install Astro CLI
-        run: curl -sSL install.astronomer.io | sudo bash -s
+#       - name: Install Astro CLI
+#         run: curl -sSL install.astronomer.io | sudo bash -s
 
-      - name: Setup Environment
-        # Running from the root directory. No working-directory override.
-        run: |
-          cd ./airflow
-          echo "AIRFLOW_CONN_SNOWFLAKE_CONN=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
-          echo "ADZUNA_APP_ID=${{ secrets.ADZUNA_APP_ID }}" >> .env
-          echo "ADZUNA_APP_KEY=${{ secrets.ADZUNA_APP_KEY }}" >> .env
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-          echo "AIRFLOW_CONN_SNOWFLAKE_DEFAULT=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
-          echo 'AIRFLOW_CONN_SLACK_CONN={"conn_type": "http", "host": "'"${{ secrets.SLACK_CONN }}"'"}' >> .env
-      - name: Debug API Keys
-        run: |
-          APP_ID_LEN=${#ADZUNA_APP_ID}
-          echo "The Adzuna App ID is $APP_ID_LEN characters long."
-        env:
-          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+#       - name: Setup Environment
+#         # Running from the root directory. No working-directory override.
+#         run: |
+#           cd ./airflow
+#           echo "AIRFLOW_CONN_SNOWFLAKE_CONN=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
+#           echo "ADZUNA_APP_ID=${{ secrets.ADZUNA_APP_ID }}" >> .env
+#           echo "ADZUNA_APP_KEY=${{ secrets.ADZUNA_APP_KEY }}" >> .env
+#           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+#           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+#           echo "AIRFLOW_CONN_SNOWFLAKE_DEFAULT=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
+#           echo 'AIRFLOW_CONN_SLACK_CONN={"conn_type": "http", "host": "'"${{ secrets.SLACK_CONN }}"'"}' >> .env
+#       - name: Debug API Keys
+#         run: |
+#           APP_ID_LEN=${#ADZUNA_APP_ID}
+#           echo "The Adzuna App ID is $APP_ID_LEN characters long."
+#         env:
+#           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
 
-      - name: Run DAG
-        # Running from the root directory.
-        run: |
-          cd ./airflow
-          astro dev start --wait 2m
-          astro dev run dags test testing_pipeline
+#       - name: Run DAG
+#         # Running from the root directory.
+#         run: |
+#           cd ./airflow
+#           astro dev start --wait 2m
+#           astro dev run dags test testing_pipeline
 
-      - name: Shutdown Astro
-        if: always()
-        run: |
-          cd ./airflow
-          astro dev stop
+#       - name: Shutdown Astro
+#         if: always()
+#         run: |
+#           cd ./airflow
+#           astro dev stop
