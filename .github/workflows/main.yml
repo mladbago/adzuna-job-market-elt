@@ -2,22 +2,27 @@ name: Test Adzuna Pipeline
 
 on:
   push:
-    branches: [ main ] # Trigger on push
-  workflow_dispatch: # Trigger manually
+    branches: [ main ] 
+  workflow_dispatch: 
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: dags
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Astro CLI
+        working-directory: .
         run: curl -sSL install.astronomer.io | sudo bash -s
 
       - name: Setup Environment
         run: |
-          # Inject Snowflake Connection for both Airflow and dbt
           echo "AIRFLOW_CONN_SNOWFLAKE_CONN=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
           echo "ADZUNA_APP_ID=${{ secrets.ADZUNA_APP_ID }}" >> .env
           echo "ADZUNA_APP_KEY=${{ secrets.ADZUNA_APP_KEY }}" >> .env
@@ -25,7 +30,10 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
 
       - name: Run DAG
-        # Start Airflow, wait for it to be ready, then run the specific DAG
         run: |
           astro dev start --wait 2m
           astro dev run testing_pipeline
+
+      - name: Shutdown Astro
+        if: always()
+        run: astro dev stop
