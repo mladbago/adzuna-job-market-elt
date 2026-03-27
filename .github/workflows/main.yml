@@ -30,6 +30,7 @@ jobs:
           echo "ADZUNA_APP_KEY=${{ secrets.ADZUNA_APP_KEY }}" >> .env
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AIRFLOW_CONN_SNOWFLAKE_DEFAULT=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
       - name: Debug API Keys
         run: |
           APP_ID_LEN=${#ADZUNA_APP_ID}
