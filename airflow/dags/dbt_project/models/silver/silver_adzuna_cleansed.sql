@@ -1,5 +1,6 @@
 {{config(
-    materialized='table'
+    unique_key = 'job_id', 
+    on_schema_change = 'fail'
 )}}
 
 WITH STG_DATA AS (
@@ -23,3 +24,6 @@ FROM STG_DATA
 QUALIFY ROW_NUMBER() OVER (PARTITION BY job_id, created_at ORDER BY loaded_at DESC) = 1
 )
 SELECT * FROM CLEANSED_DATA
+{% if is_incremental() %}
+    WHERE LOADED_AT > (SELECT MAX(LOADED_AT) FROM {{this}})
+{% endif %}

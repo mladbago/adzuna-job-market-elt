@@ -1,3 +1,7 @@
+{{config(
+    unique_key='job_id'
+)}}
+
 WITH raw_source AS (
     SELECT * FROM {{ source('adzuna_raw', 'jobs_raw') }}
 ),
@@ -22,3 +26,7 @@ FLATTENED AS (
     LATERAL FLATTEN(input => raw_content:results) AS F
 )
 SELECT * FROM FLATTENED
+
+{% if is_incremental() %}
+    WHERE LOADED_AT > (SELECT MAX(LOADED_AT) FROM {{ this }})
+{% endif %}

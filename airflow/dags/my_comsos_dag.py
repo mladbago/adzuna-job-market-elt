@@ -6,6 +6,10 @@ from cosmos.profiles import SnowflakeUserPasswordProfileMapping
 import os 
 import requests
 from airflow.providers.slack.notifications.slack_webhook import SlackWebhookNotifier
+import time
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+import json 
+from cosmos.constants import TestBehavior, LoadMode
 
 DBT_PROJECT_PATH = Path("/usr/local/airflow/dags/dbt_project")
 
@@ -27,7 +31,7 @@ profile_config = ProfileConfig(
     target_name="dev",
     profile_mapping=SnowflakeUserPasswordProfileMapping(
         conn_id="snowflake_default", 
-        profile_args={"database": "ADZUNA_DB", "schema": "STAGING"},
+        profile_args={"database": "ADZUNA_DB", "schema": "DEV"},
     ),
 )
 
@@ -38,7 +42,8 @@ profile_config = ProfileConfig(
     on_failure_callback=[on_failure_notifier],
     on_success_callback=[on_success_notifier]
 )
-def test_dbt_standalone():
+def testing_pipeline():
+    
     
     dbt_test_run = DbtTaskGroup(
         group_id="adzuna_dbt_models",
@@ -48,36 +53,85 @@ def test_dbt_standalone():
             dbt_executable_path=DBT_EXECUTABLE_PATH,
         ),
         render_config=RenderConfig(
-            select=["path:models"], 
+            load_method=LoadMode.DBT_LS,
+            test_behavior=TestBehavior.BUILD,
+            select=["path:models", "path:snapshots", "path:tests"]
         ),
     )
-
-    @task
-    def fetch_adzuna_jobs(page: int = 1): 
+    
+    @task()
+    def fetch_all_adzuna_pages():
+        """Fetches all pages of job postings for the last 24 hours."""
         APP_ID = os.getenv("ADZUNA_APP_ID")
         APP_KEY = os.getenv("ADZUNA_APP_KEY")
-        BASE_URL = os.getenv("BASE_URL")
-
-        if not APP_ID or not APP_KEY: 
-            raise ValueError("Adzuna API credentials are not set in environment variables.")
+        RESULTS_PER_PAGE = 50
         
-        base_url = f"https://api.adzuna.com/v1/api/jobs/pl/search/{page}"
+        all_jobs = []
+        current_page = 1
+        total_count = None
+        
+        while True:
+            url = f"https://api.adzuna.com/v1/api/jobs/pl/search/{current_page}"
+            params = {
+                'app_id': APP_ID,
+                'app_key': APP_KEY,
+                'results_per_page': RESULTS_PER_PAGE,
+                'max_days_old': 1,
+                'content-type': 'application/json'
+            }
 
-        params = {
-            "app_id": APP_ID,
-            "app_key": APP_KEY,
-            "results_per_page": 50,
-            "max_days_old": 1,
-            "content-type": "application/json"
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            if total_count is None:
+                total_count = data.get('count', 0)
+                print(f"Total jobs found for today: {total_count}")
+            
+            page_results = data.get('results', [])
+            all_jobs.extend(page_results)
+            
+            if not page_results or len(all_jobs) >= total_count:
+                break
+            
+            current_page += 1
+            # used for testing 
+            if current_page == 2: 
+                break
+
+            # used for testing 
+            print('Fetched first things')
+            time.sleep(2.5)
+
+        print(f"Successfully fetched {len(all_jobs)} jobs across {current_page} pages.")
+        return all_jobs
+    
+    @task()
+    def upload_to_s3(jobs_list: list, ds=None):
+        """Uploads the full list of jobs to S3 with Hive-style partitioning."""
+        year, month, day = ds.split('-')
+        
+        s3_hook = S3Hook(aws_conn_id='aws_s3_default')
+        bucket_name = 'adzuna-raw-data-dev'
+        s3_key = f"raw_jsons/year={year}/month={month}/day={day}/adzuna_jobs.json"
+        
+        final_data = {
+            "count": len(jobs_list),
+            "results": jobs_list,
+            "ingested_at": datetime.utcnow().isoformat()
         }
+        
+        s3_hook.load_string(
+            string_data=json.dumps(final_data),
+            key=s3_key,
+            bucket_name=bucket_name,
+            replace=True
+        )
+        return s3_key
+    
 
-        response = requests.get(base_url, params=params)
-        response.raise_for_status() 
-        data = response.json()
+    jobs = fetch_all_adzuna_pages() 
+    s3_upload_task = upload_to_s3(jobs)
+    s3_upload_task >> dbt_test_run
 
-        found_count = len(data.get('results',[]))
-        print(f"Successfully retrieved {found_count} job listings.")
-        return data 
-    fetch_adzuna_jobs() >> dbt_test_run
-
-test_dbt_standalone()
+testing_pipeline()

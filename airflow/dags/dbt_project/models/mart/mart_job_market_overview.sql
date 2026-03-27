@@ -1,11 +1,12 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
+{{config(
+    unique_key='job_id'
+)}}
 
 WITH fact_jobs as (
     SELECT * FROM {{ ref('fct_job_postings_cleansed') }}
+    {% if is_incremental() %}
+        WHERE CREATED_AT > (SELECT MAX(CREATED_AT) FROM {{ this }})
+    {% endif %}
 ), 
 
 dim_company as (

@@ -3,6 +3,9 @@ version: 2
 unit_tests:
   - name: test_uppercasing_cities_while_cleaning
     model: silver_adzuna_cleansed
+    overrides:
+      macros:
+        is_incremental: false
     given:
       - input: ref('stg_adzuna_jobs')
         rows: 

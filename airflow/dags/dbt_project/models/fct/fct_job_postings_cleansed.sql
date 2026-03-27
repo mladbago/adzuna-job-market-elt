@@ -1,5 +1,5 @@
 {{config(
-    materialized='table' 
+    unique_key='job_posting_key'
 )}}
 
 WITH CLEANED_DATA AS (
@@ -20,4 +20,8 @@ SELECT
     LOADED_AT, 
     CREATED_AT
 FROM CLEANED_DATA
+
+{% if is_incremental() %}
+    WHERE LOADED_AT > (SELECT MAX(LOADED_AT) FROM {{ this }})
+{% endif %}
 

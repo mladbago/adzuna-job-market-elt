@@ -1,7 +1,3 @@
-{{config(
-    materialized='table'
-)}}
-
 WITH UNIQUE_LOCATIONS AS (
     SELECT DISTINCT 
         CITY, 

@@ -1,7 +1,3 @@
-{{config(
-    materialized='table'
-)}}
-
 WITH UNIQUE_CATEGORIES AS (
     SELECT DISTINCT 
         CATEGORY_LABEL, 

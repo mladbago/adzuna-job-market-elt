@@ -1,7 +1,3 @@
-{{config(
-    materialized='table'
-)}}
-
 WITH DATE_SPINE AS (
     SELECT 
         CAST(DATEADD(DAY, SEQ4(), '2025-01-01') AS DATE) AS DATE_DAY

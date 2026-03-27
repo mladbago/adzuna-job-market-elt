@@ -1,6 +1,3 @@
-{{config(
-    materialized='table'
-)}}
 WITH UNIQUE_COMPANIES AS (
     SELECT DISTINCT 
         COMPANY_NAME
