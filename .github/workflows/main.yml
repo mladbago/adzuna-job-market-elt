@@ -12,20 +12,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- DEBUG STEP: This tells us exactly where we are ---
+      # --- DIAGNOSTIC STEP ---
       - name: Show Folder Structure
         run: |
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files (ignoring hidden git files):"
-          find . -maxdepth 3 -not -path '*/.*'
+          echo "Listing all files in the root of the repository:"
+          ls -la
 
       - name: Install Astro CLI
         run: curl -sSL install.astronomer.io | sudo bash -s
 
       - name: Setup Environment
-        # UPDATE THIS PATH: If 'dags' is inside another folder, 
-        # change this to './adzuna-job-market-elt/dags'
-        working-directory: ./dags 
+        # Running from the root directory. No working-directory override.
         run: |
           echo "AIRFLOW_CONN_SNOWFLAKE_CONN=${{ secrets.SNOWFLAKE_CONN_URI }}" >> .env
           echo "ADZUNA_APP_ID=${{ secrets.ADZUNA_APP_ID }}" >> .env
@@ -34,13 +31,11 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
 
       - name: Run DAG
-        # UPDATE THIS PATH to match the one above
-        working-directory: ./dags
+        # Running from the root directory.
         run: |
           astro dev start --wait 2m
           astro dev run testing_pipeline
 
       - name: Shutdown Astro
         if: always()
-        working-directory: ./dags
         run: astro dev stop
