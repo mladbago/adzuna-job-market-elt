@@ -18,12 +18,14 @@ DBT_EXECUTABLE_PATH = "/usr/local/airflow/dbt_venv/bin/dbt"
 
 on_failure_notifier = SlackWebhookNotifier(
     slack_webhook_conn_id="slack_conn",
-    text="❌ *DAG Failed!* \n*DAG:* {{ dag.dag_id }} \n*Execution Time:* {{ dag_run.logical_date }}"
+    # text="❌ *DAG Failed!* \n*DAG:* {{ dag.dag_id }} \n*Execution Time:* {{ dag_run.logical_date }}"
+    text="❌ DAG FAILED"
 )
 
 on_success_notifier = SlackWebhookNotifier(
     slack_webhook_conn_id="slack_conn",
-    text="✅ *DAG Succeeded!* \n*Project:* Adzuna ELT Pipeline \n*Status:* All data moved to Snowflake."
+    # text="✅ *DAG Succeeded!* \n*Project:* Adzuna ELT Pipeline \n*Status:* All data moved to Snowflake."
+    text="✅ *DAG Succeeded!"
 )
 
 profile_config = ProfileConfig(
