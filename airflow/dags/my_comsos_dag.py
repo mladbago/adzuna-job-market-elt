@@ -45,7 +45,7 @@ profile_config = ProfileConfig(
 )
 def testing_pipeline():
     
-    
+    #Tests
     dbt_test_run = DbtTaskGroup(
         group_id="adzuna_dbt_models",
         project_config=ProjectConfig(DBT_PROJECT_PATH),

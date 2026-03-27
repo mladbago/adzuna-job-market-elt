@@ -33,9 +33,12 @@ jobs:
       - name: Run DAG
         # Running from the root directory.
         run: |
+          cd ./airflow
           astro dev start --wait 2m
           astro dev run testing_pipeline
 
       - name: Shutdown Astro
         if: always()
-        run: astro dev stop
+        run: |
+          cd ./airflow
+          astro dev stop
