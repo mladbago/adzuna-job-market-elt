@@ -1,6 +1,11 @@
 {{config(
     unique_key='job_posting_key'
+    
 )}}
+
+-- depends_on: {{ ref('dim_category_cleansed') }}
+-- depends_on: {{ ref('dim_company_cleansed') }}
+-- depends_on: {{ ref('dim_location_cleansed') }}
 
 WITH CLEANED_DATA AS (
     SELECT * FROM {{ ref('silver_adzuna_cleansed') }}
