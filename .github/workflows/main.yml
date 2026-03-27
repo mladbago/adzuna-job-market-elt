@@ -38,13 +38,13 @@ jobs:
           echo "The Adzuna App ID is $APP_ID_LEN characters long."
         env:
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
-          
+
       - name: Run DAG
         # Running from the root directory.
         run: |
           cd ./airflow
           astro dev start --wait 2m
-          astro dev run dags test testing_pipeline
+          astro dev run dags trigger testing_pipeline
 
       - name: Shutdown Astro
         if: always()

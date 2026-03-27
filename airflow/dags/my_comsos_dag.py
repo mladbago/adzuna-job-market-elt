@@ -16,7 +16,6 @@ DBT_PROJECT_PATH = Path("/usr/local/airflow/dags/dbt_project")
 
 DBT_EXECUTABLE_PATH = "/usr/local/airflow/dbt_venv/bin/dbt"
 
-
 on_failure_notifier = SlackWebhookNotifier(
     slack_webhook_conn_id="slack_conn",
     text="❌ *DAG Failed!* \n*DAG:* {{ dag.dag_id }} \n*Execution Time:* {{ dag_run.logical_date }}"
