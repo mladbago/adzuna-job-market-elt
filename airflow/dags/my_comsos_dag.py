@@ -10,6 +10,7 @@ import time
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 import json 
 from cosmos.constants import TestBehavior, LoadMode
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 DBT_PROJECT_PATH = Path("/usr/local/airflow/dags/dbt_project")
 
@@ -96,7 +97,7 @@ def testing_pipeline():
             
             current_page += 1
             # used for testing 
-            if current_page == 2: 
+            if current_page == 3: 
                 break
 
             # used for testing 
@@ -127,11 +128,32 @@ def testing_pipeline():
             bucket_name=bucket_name,
             replace=True
         )
-        return s3_key
+
+        clean_key = s3_key.replace("raw_jsons/", "")
+        return clean_key
     
+    @task()
+    def load_s3_to_snowflake_raw(s3_key: str):
+        """
+        Executes a COPY INTO command in Snowflake using the SnowflakeHook.
+        """
+        hook = SnowflakeHook(snowflake_conn_id='snowflake_default')
+
+        sql = f"""
+            COPY INTO adzuna_db.raw.jobs_raw (raw_content, file_name)
+            FROM (
+                SELECT $1, metadata$filename
+                FROM @adzuna_db.raw.adzuna_s3_stage/{s3_key}
+            )
+            FILE_FORMAT = (FORMAT_NAME = adzuna_db.raw.adzuna_json_format)
+        """
+        hook.run(sql)
+        print(f"Successfully triggered Snowflake load for: {s3_key}")
 
     jobs = fetch_all_adzuna_pages() 
-    s3_upload_task = upload_to_s3(jobs)
-    s3_upload_task >> dbt_test_run
+    s3_path = upload_to_s3(jobs)
+
+    snowflake_load_task = load_s3_to_snowflake_raw(s3_path)
+    snowflake_load_task >> dbt_test_run
 
 testing_pipeline()
