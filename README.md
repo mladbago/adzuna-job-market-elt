@@ -14,8 +14,8 @@ This project is a production-grade data engineering pipeline that automates the 
 The pipeline follows a modular ELT (Extract, Load, Transform) pattern designed for scalability and observability.
 
 <p align="center">
-  <a href="assets/architecture.svg">
-    <img src="assets/architecture.svg" alt="Data Pipeline Architecture" width="1000">
+  <a href="assets/architecture.png">
+    <img src="assets/architecture.png" alt="Data Pipeline Architecture" width="1000">
   </a>
 </p>
 
