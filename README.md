@@ -13,9 +13,11 @@ This project is a production-grade data engineering pipeline that automates the 
 ## 🏗️ System Architecture
 The pipeline follows a modular ELT (Extract, Load, Transform) pattern designed for scalability and observability.
 
-> **Architecture Flow:** > `Adzuna API` ➡️ `Python (Requests)` ➡️ `Airflow (Orchestration)` ➡️ `Snowflake (Data Warehouse)` ➡️ `dbt (Transformation)` ➡️ `Preset (BI)`
-
-**(Place your Architecture Diagram/Image here)**
+<p align="center">
+  <a href="assets/architecture.svg">
+    <img src="assets/architecture.svg" alt="Data Pipeline Architecture" width="1000">
+  </a>
+</p>
 
 ---
 
