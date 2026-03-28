@@ -5,7 +5,7 @@
 WITH fact_jobs as (
     SELECT * FROM {{ ref('fct_job_postings_cleansed') }}
     {% if is_incremental() %}
-        WHERE CREATED_AT > (SELECT MAX(CREATED_AT) FROM {{ this }})
+        WHERE LOADED_AT > (SELECT MAX(LOADED_AT) FROM {{ this }})
     {% endif %}
 ), 
 
